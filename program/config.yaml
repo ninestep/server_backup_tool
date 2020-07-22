@@ -7,9 +7,9 @@ save:
     type: Mail #备份类型，目前支持Mail邮箱
     host: smtp.qq.com #SMTP 服务器主机
     port: 465 # SMTP 服务使用的端口号
-    user: 859696354@qq.com # 发送的邮箱账号
-    password: pojqkdejrexzbdia # 发送的邮箱密码
-    to: 859696354@qq.com #接收邮件的邮箱
+    user: '****@qq.com' # 发送的邮箱账号
+    password: '****' # 发送的邮箱密码
+    to: '****@qq.com' #接收邮件的邮箱
 # 备份配置
 back_up:
   test: #备份名称，不可重复
