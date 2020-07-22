@@ -1,0 +1,8 @@
+APScheduler==3.6.3
+pathtools==0.1.2
+PyMySQL==0.9.3
+pytz==2020.1
+PyYAML==5.3.1
+six==1.15.0
+tzlocal==2.1
+watchdog==0.10.3

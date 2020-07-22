@@ -1,0 +1,19 @@
+{
+  "default": {
+    "save_path": "/program/back/"
+  },
+  "back_up": {
+    "test": {
+      "type": "file",
+      "path": "/program/admin"
+    },
+    "mysql": {
+      "type": "mysql",
+      "address": "mysql",
+      "database": "default",
+      "port": "3306",
+      "username": "root",
+      "password": "root"
+    }
+  }
+}

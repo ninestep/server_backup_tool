@@ -1,0 +1,72 @@
+2020-07-15 10:03:14,233 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2020-07-15 10:03:14,243 INFO supervisord started with pid 1
+2020-07-15 10:03:15,246 INFO spawned: 'python' with pid 7
+2020-07-15 10:03:16,248 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2020-07-15 10:03:18,430 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:03:19,434 INFO spawned: 'python' with pid 11
+2020-07-15 10:03:19,843 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:03:20,846 INFO spawned: 'python' with pid 15
+2020-07-15 10:03:21,229 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:03:23,234 INFO spawned: 'python' with pid 19
+2020-07-15 10:03:23,712 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:03:26,718 INFO spawned: 'python' with pid 23
+2020-07-15 10:03:27,166 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:03:28,168 INFO gave up: python entered FATAL state, too many start retries too quickly
+2020-07-15 10:12:35,857 WARN received SIGTERM indicating exit request
+2020-07-15 10:12:58,774 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2020-07-15 10:12:58,780 INFO supervisord started with pid 1
+2020-07-15 10:12:59,784 INFO spawned: 'python' with pid 7
+2020-07-15 10:13:00,786 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2020-07-15 10:13:02,301 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:13:03,305 INFO spawned: 'python' with pid 11
+2020-07-15 10:13:03,744 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:13:04,747 INFO spawned: 'python' with pid 15
+2020-07-15 10:13:05,175 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:13:07,179 INFO spawned: 'python' with pid 19
+2020-07-15 10:13:07,581 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:13:10,586 INFO spawned: 'python' with pid 23
+2020-07-15 10:13:11,117 INFO exited: python (exit status 1; not expected)
+2020-07-15 10:13:12,119 INFO gave up: python entered FATAL state, too many start retries too quickly
+2020-07-15 10:13:36,148 WARN received SIGTERM indicating exit request
+2020-07-22 15:28:51,905 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2020-07-22 15:28:52,032 INFO supervisord started with pid 1
+2020-07-22 15:28:53,037 INFO spawned: 'python' with pid 7
+2020-07-22 15:28:53,748 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:28:54,751 INFO spawned: 'python' with pid 11
+2020-07-22 15:28:56,460 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2020-07-22 15:28:56,461 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:28:57,477 INFO spawned: 'python' with pid 15
+2020-07-22 15:28:58,488 INFO success: python entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2020-07-22 15:28:58,489 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:28:59,494 INFO spawned: 'python' with pid 19
+2020-07-22 15:28:59,928 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:29:00,932 INFO spawned: 'python' with pid 23
+2020-07-22 15:29:01,325 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:29:03,330 INFO spawned: 'python' with pid 27
+2020-07-22 15:29:03,714 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:29:06,719 INFO spawned: 'python' with pid 31
+2020-07-22 15:29:07,300 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:29:08,303 INFO gave up: python entered FATAL state, too many start retries too quickly
+2020-07-22 15:31:57,151 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2020-07-22 15:31:57,159 INFO supervisord started with pid 49
+2020-07-22 15:31:58,163 INFO spawned: 'python' with pid 51
+2020-07-22 15:31:58,610 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:31:59,614 INFO spawned: 'python' with pid 55
+2020-07-22 15:32:00,013 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:32:02,019 INFO spawned: 'python' with pid 59
+2020-07-22 15:32:02,410 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:32:05,417 INFO spawned: 'python' with pid 63
+2020-07-22 15:32:05,827 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:32:06,829 INFO gave up: python entered FATAL state, too many start retries too quickly
+2020-07-22 15:32:35,868 WARN received SIGINT indicating exit request
+2020-07-22 15:33:13,445 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2020-07-22 15:33:13,456 INFO supervisord started with pid 71
+2020-07-22 15:33:14,461 INFO spawned: 'python' with pid 73
+2020-07-22 15:33:14,879 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:33:15,884 INFO spawned: 'python' with pid 77
+2020-07-22 15:33:16,277 INFO exited: python (exit status 1; not expected)
+2020-07-22 15:33:18,282 INFO spawned: 'python' with pid 81
+2020-07-22 15:33:18,283 WARN received SIGINT indicating exit request
+2020-07-22 15:33:18,285 INFO waiting for python to die
+2020-07-22 15:33:18,694 INFO stopped: python (exit status 1)
+2020-07-22 15:41:37,241 WARN received SIGTERM indicating exit request

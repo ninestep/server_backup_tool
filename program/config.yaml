@@ -1,0 +1,29 @@
+# 默认配置
+default:
+  save_path : /program/back/ #压缩文件保存地址
+# 备份选项
+save:
+  mail: #备份名字
+    type: Mail #备份类型，目前支持Mail邮箱
+    host: smtp.qq.com #SMTP 服务器主机
+    port: 465 # SMTP 服务使用的端口号
+    user: 859696354@qq.com # 发送的邮箱账号
+    password: pojqkdejrexzbdia # 发送的邮箱密码
+    to: 859696354@qq.com #接收邮件的邮箱
+# 备份配置
+back_up:
+  test: #备份名称，不可重复
+    type: file #备份类型，file文件，其他为数据库类型
+    path: /program/admin #备份路径
+    backup_type: increment # 备份类型，quantity全量备份，increment增量备份，数据库统一进行全量备份
+    save_name: mail #对应save里面配置的选项
+    cron: "*/59 * * * *" #cron格式时间戳
+  mysql:
+    type: mysql
+    address: mysql #数据库地址
+    database: default #指定数据库
+    port: 3306 #数据库端口
+    username: root #用户名
+    password: root #密码
+    save_name: mail
+    cron: "*/59 * * * *"
