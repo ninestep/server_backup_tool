@@ -1,7 +1,7 @@
 import log, os
 from back_up import FullBack
 from Tools import Config, FileEventHandler
-from send import Mail
+from send import Mail, Baidu
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from watchdog.observers import Observer
@@ -63,7 +63,7 @@ def fullBack(name, args, save_path):
         logTool.error('%s配置设置了不存在的保存方式%s' % (name, args['save_name']))
         raise ValueError('%s配置设置了不存在的保存方式%s' % (name, args['save_name']))
     save_conf = save_type[args['save_name']]
-    save = {"Mail": Mail, }[save_conf['type']]()
+    save = {"Mail": Mail, "Baidu": Baidu}[save_conf['type']]()
     save.save(save_path, name)
     os.remove(save_path)
 

@@ -1,10 +1,15 @@
-import smtplib
+import smtplib, time, requests, os, hashlib, json
 import log, traceback
 from Tools import Config
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
 from datetime import datetime
+import configparser
+import lead
+
+cf = configparser.ConfigParser()
+cf.read("/program/cache.ini", encoding="utf-8")  # 读取配置文件，如果写文件的绝对路径，就可以不用os模块
 
 logTool = log.logs()
 conf = Config()
@@ -47,3 +52,188 @@ class Mail:
             logTool.info('邮件发送成功')
         except smtplib.SMTPException:
             logTool.info('邮件发送失败,错误信息%s' % traceback.format_exc())
+
+
+class Baidu:
+    def __init__(self):
+        bd_conf = conf.get('save')['baidu']
+        self.client_id = bd_conf['client_id']
+        self.secret_key = bd_conf['secret_key']
+        self.save_path = bd_conf['save_path']
+        self._get_cache()
+        if (int(self.expires_in) + int(self.update) - 100) <= int(time.time()):
+            self._refresh_token()
+            self._get_cache()
+
+    def _get_cache(self):
+        self.cf = configparser.ConfigParser()
+        self.cf.read("/program/cache.ini", encoding="utf-8")
+        if 'baidu' not in self.cf:
+            lead.baidu()
+            self.cf = configparser.ConfigParser()
+            self.cf.read("/program/cache.ini", encoding="utf-8")
+        self.expires_in = self.cf.get('baidu', 'expires_in')
+        self.refresh_token = self.cf.get('baidu', 'refresh_token')
+        self.access_token = self.cf.get('baidu', 'access_token')
+        self.session_secret = self.cf.get('baidu', 'session_secret')
+        self.scope = self.cf.get('baidu', 'scope')
+        self.update = self.cf.get('baidu', 'update')
+
+    def _refresh_token(self):
+        url = 'https://openapi.baidu.com/oauth/2.0/token?grant_type=refresh_token&refresh_token=%s &client_id=%s&client_secret=%s' % (
+            self.refresh_token, self.client_id, self.secret_key)
+        res = requests.get(url)
+        res = res.json()
+        if 'error' in res:
+            logTool.error('返回出错，错误代码：%s。错误信息：%s.具体请参阅%s' % (
+                res['error'], res['error_description'], 'https://developer.baidu.com/newwiki/dev-wiki/fu-lu.html'))
+            raise requests.HTTPError('返回出错，错误代码：%s。错误信息：%s.具体请参阅%s' % (
+                res['error'], res['error_description'], 'https://developer.baidu.com/newwiki/dev-wiki/fu-lu.html'))
+        else:
+            if not cf.has_section('baidu'):
+                cf.add_section('baidu')
+            cf.set("baidu", "expires_in", str(res['expires_in']))
+            cf.set("baidu", "refresh_token", res['refresh_token'])
+            cf.set("baidu", "access_token", res['access_token'])
+            cf.set("baidu", "session_secret", res['session_secret'])
+            cf.set("baidu", "session_key", res['session_key'])
+            cf.set("baidu", "scope", res['scope'])
+            cf.set("baidu", "update", str(int(time.time())))
+            with open('cache.ini', 'w') as fp:
+                cf.write(fp)
+            print('百度网盘重新获取权限成功')
+
+    def get_free_space(self):
+        """
+        获取空闲空间大小,单位B
+        :return:
+        """
+        url = "https://pan.baidu.com/api/quota?access_token=%s&chckfree=1&checkexpire=1" % self.access_token
+        res = requests.get(url)
+        res = res.json()
+        if 'error' in res:
+            logTool.error('返回出错，错误代码：%s。错误信息：%s.具体请参阅%s' % (
+                res['error'], res['error_description'], 'https://developer.baidu.com/newwiki/dev-wiki/fu-lu.html'))
+            raise requests.HTTPError('返回出错，错误代码：%s。错误信息：%s.具体请参阅%s' % (
+                res['error'], res['error_description'], 'https://developer.baidu.com/newwiki/dev-wiki/fu-lu.html'))
+        else:
+            return res['free']
+
+    def save(self, path, name):
+        [file_path, filename] = os.path.split(path)
+        bd_path = os.path.join(self.save_path, name, filename)
+
+        logTool.info('开始备份%s,文件将存贮到%s' % (name, bd_path))
+        file_size = os.path.getsize(path)
+        if file_size <= 4194304:
+            file_list = [{
+                'path': path,
+                'md5': self._get_md5(path)
+            }]
+        else:
+            logTool.info('文件%s大于4M，切分文件' % path)
+            file_list = self._file_chunkspilt(path)
+        data = {
+            "path": bd_path,
+            "size": file_size,
+            "isdir": 0,
+            "autoinit": 1,
+            "rtype": 1,
+            "block_list": json.dumps(["%s" % x["md5"] for x in file_list]),
+            "content-md5": self._get_md5(path)
+        }
+        header = {
+            'User-Agent': 'pan.baidu.com'
+        }
+        url = 'https://pan.baidu.com/rest/2.0/xpan/file?method=precreate&access_token=%s' % self.access_token
+        data = "&".join("{}={}".format(*i) for i in data.items())
+
+        logTool.info('文件%s预上传' % path)
+        res = requests.post(url=url, data=data, headers=header).json()
+        if int(res['errno']) != 0:
+            logTool.error('%s 上传错误，错误代码%s' % (name, res['errno']))
+            raise requests.HTTPError('%s 上传错误，错误代码%s' % (name, res['errno']))
+        else:
+            if int(res['return_type']) == 2:
+                logTool.info('%s 已上传，存储路径为%s' % (name, res['info']['path']))
+            else:
+                upload_id = res['uploadid']
+                data = {
+                    "method": "upload",
+                    "type": "tmpfile",
+                    "path": bd_path,
+                    "uploadid": res['uploadid']
+                }
+                block_list = []
+                for i, val in enumerate(file_list):
+                    logTool.info('准备上传%s第%d个分块文件%s' % (path, i, val['path']))
+                    data['partseq'] = i
+                    url = 'https://d.pcs.baidu.com/rest/2.0/pcs/superfile2?access_token=%s&%s' % (
+                        self.access_token, "&".join("{}={}".format(*i) for i in data.items()))
+                    files = {'file': open(val['path'], 'rb')}
+                    logTool.info('开始上传%s第%d个分块文件%s' % (path, i, val['path']))
+                    upload_res = requests.post(url, files=files, timeout=None).json()
+                    if 'errno' in upload_res:
+                        logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
+                        raise requests.HTTPError(
+                            '%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
+                    else:
+                        block_list.append(upload_res['md5'])
+                        if path != val['path']:
+                            os.remove(val['path'])
+                logTool.info('文件上传完成，开始创建文件')
+                url = 'https://pan.baidu.com/rest/2.0/xpan/file?method=create&access_token=%s' % self.access_token
+                data = {
+                    "path": bd_path,
+                    "size": file_size,
+                    "isdir": 0,
+                    "uploadid": upload_id,
+                    "rtype": 3,
+                    "block_list": json.dumps(block_list)
+                }
+                encode_data = "&".join("{}={}".format(*i) for i in data.items())
+                create_res = requests.post(url, data=encode_data, headers=header).json()
+                if 'errno' not in create_res or int(create_res['errno']) == 0:
+                    logTool.info('%s文件上传成功' % (path))
+                else:
+                    logTool.error('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
+                    raise requests.HTTPError('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
+
+    def _file_chunkspilt(self, filepath, chunksize=4194304):
+        '''
+        文件按照数据块大小分割为多个子文件
+        INPUT  -> 文件目录, 文件名, 每个数据块大小
+        '''
+        file_list = []
+        if chunksize > 0:
+            partnum = 0
+            inputfile = open(filepath, 'rb')
+            [path, filename] = os.path.split(filepath)
+            while True:
+                chunk = inputfile.read(chunksize)
+                if not chunk:
+                    break
+                partnum += 1
+                newfilename = os.path.join(path, (filename + '_%04d' % partnum))
+                sub_file = open(newfilename, 'wb')
+                sub_file.write(chunk)
+                sub_file.close()
+                md5 = self._get_md5(newfilename)
+                file_list.append({
+                    'path': newfilename,
+                    'md5': md5,
+                })
+            inputfile.close()
+            return file_list
+        else:
+            print('chunksize must bigger than 0!')
+            return []
+
+    @staticmethod
+    def _get_md5(file):
+        m = hashlib.md5()
+        with open(file, 'rb') as f:
+            for line in f:
+                m.update(line)
+        md5code = m.hexdigest()
+        return md5code

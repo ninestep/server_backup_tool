@@ -15,4 +15,4 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/re
     && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && echo_supervisord_conf > /etc/supervisord.conf \
     && sed -i '$a \[include]' /etc/supervisord.conf && sed -i '$a \files = /etc/supervisor/*.ini' /etc/supervisord.conf
-ENTRYPOINT ["supervisord", "-c", "/etc/supervisord.conf"]
+#ENTRYPOINT ["supervisord", "-c", "/etc/supervisord.conf"]
