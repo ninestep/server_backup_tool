@@ -1,7 +1,7 @@
 version: "3"
 services:
   python:
-    build: ./docker
+    build: ./
     volumes:
       - ./program:/program
 #    command: python main.py
