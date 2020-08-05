@@ -62,10 +62,14 @@ def fullBack(name, args, save_path):
     if args['save_name'] not in save_type.keys():
         logTool.error('%s配置设置了不存在的保存方式%s' % (name, args['save_name']))
         raise ValueError('%s配置设置了不存在的保存方式%s' % (name, args['save_name']))
-    save_conf = save_type[args['save_name']]
-    save = {"Mail": Mail, "Baidu": Baidu}[save_conf['type']]()
-    save.save(save_path, name)
-    os.remove(save_path)
+    try:
+        save_conf = save_type[args['save_name']]
+        save = {"Mail": Mail, "Baidu": Baidu}[save_conf['type']]()
+        save.save(save_path, name)
+    except Exception as e:
+        logTool.error('%s文件上传出错，错误信息：%s' % (name, e))
+    finally:
+        os.remove(save_path)
 
 
 if __name__ == '__main__':
