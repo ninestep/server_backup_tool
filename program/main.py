@@ -1,4 +1,4 @@
-import log, os
+import log, os, hashlib
 from back_up import FullBack
 from Tools import Config, FileEventHandler
 from send import Mail, Baidu
