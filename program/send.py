@@ -135,8 +135,9 @@ class Baidu:
                 'md5': self._get_md5(path)
             }]
         else:
-            logTool.info('文件%s大于4M，切分文件' % path)
+            logTool.info('文件%s大小%sM大于4M，切分文件' % (path, file_size / 1048576))
             file_list = self._file_chunkspilt(path)
+            logTool.info('文件%s切分为%s份' % (path, len(file_list)))
         data = {
             "path": bd_path,
             "size": file_size,
@@ -161,6 +162,7 @@ class Baidu:
             if int(res['return_type']) == 2:
                 logTool.info('%s 已上传，存储路径为%s' % (name, res['info']['path']))
             else:
+                logTool.info('文件%s分块上传' % path)
                 upload_id = res['uploadid']
                 data = {
                     "method": "upload",
@@ -174,7 +176,11 @@ class Baidu:
                     url = 'https://d.pcs.baidu.com/rest/2.0/pcs/superfile2?access_token=%s&%s' % (
                         self.access_token, "&".join("{}={}".format(*i) for i in data.items()))
                     files = {'file': open(val['path'], 'rb')}
-                    upload_res = self.s.post(url, files=files, timeout=None).json()
+                    try:
+                        upload_res = self.s.post(url, files=files, timeout=None).json()
+                    except requests.exceptions as e:
+                        logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % e)
+                        raise e
                     if 'errno' in upload_res:
                         logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
                         raise requests.HTTPError(
@@ -200,7 +206,6 @@ class Baidu:
                 else:
                     logTool.error('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
                     raise requests.HTTPError('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
-
 
     def _file_chunkspilt(self, filepath, chunksize=4194304):
         '''
