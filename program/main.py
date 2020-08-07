@@ -41,10 +41,11 @@ def main():
             event_handler = FileEventHandler(k)
             logTool.info('增量监听路径为%s' % v['path'])
             observer.schedule(event_handler, os.path.realpath(v['path']), True)
-            sched.add_job(fullBack, CronTrigger.from_crontab(v['cron']), args=[k, v, event_handler.get_save_path()])
+            sched.add_job(fullBack, CronTrigger.from_crontab(v['cron']), args=[k, v, event_handler.get_save_path()],
+                          id=k)
         else:
             logTool.info('为%s配置全量备份定时任务' % k)
-            sched.add_job(fullBack, CronTrigger.from_crontab(v['cron']), args=[k, v, save_path])
+            sched.add_job(fullBack, CronTrigger.from_crontab(v['cron']), args=[k, v, save_path], id=k)
 
     logTool.info('文件监听开始工作')
     observer.start()
@@ -70,6 +71,10 @@ def fullBack(name, args, save_path):
         logTool.error('%s文件上传出错，错误信息：%s' % (name, e))
     finally:
         os.remove(save_path)
+
+    jobs = sched.get_job(name)
+    if jobs is not None:
+        logTool.info('%s备份完成，下次运行时间%s' % (name, jobs.next_run_time))
 
 
 if __name__ == '__main__':

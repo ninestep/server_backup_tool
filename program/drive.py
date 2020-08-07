@@ -29,7 +29,7 @@ class mysql:
             logTool.error('未找到数据库%s' % self.database)
             raise KeyError('未找到数据库%s' % self.database)
         try:
-            cmd = "mysqldump -h%s -P %s -u%s -p%s --database %s | gzip > %s" % (
+            cmd = "mysqldump -h%s -P %s -u%s -p%s %s | gzip > %s" % (
                 self.address, self.port, self.username, self.password, self.database, self.save_path
             )
             os.system(cmd)

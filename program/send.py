@@ -7,6 +7,7 @@ from email.header import Header
 from datetime import datetime
 import configparser
 import lead
+from requests.adapters import HTTPAdapter
 
 cf = configparser.ConfigParser()
 cf.read("/program/cache.ini", encoding="utf-8")  # 读取配置文件，如果写文件的绝对路径，就可以不用os模块
@@ -61,6 +62,9 @@ class Baidu:
         self.secret_key = bd_conf['secret_key']
         self.save_path = bd_conf['save_path']
         self._get_cache()
+        self.s = requests.Session()
+        self.s.mount('http://', HTTPAdapter(max_retries=3))
+        self.s.mount('https://', HTTPAdapter(max_retries=3))
         if (int(self.expires_in) + int(self.update) - 100) <= int(time.time()):
             self._refresh_token()
             self._get_cache()
@@ -82,7 +86,7 @@ class Baidu:
     def _refresh_token(self):
         url = 'https://openapi.baidu.com/oauth/2.0/token?grant_type=refresh_token&refresh_token=%s &client_id=%s&client_secret=%s' % (
             self.refresh_token, self.client_id, self.secret_key)
-        res = requests.get(url)
+        res = self.s.get(url)
         res = res.json()
         if 'error' in res:
             logTool.error('返回出错，错误代码：%s。错误信息：%s.具体请参阅%s' % (
@@ -109,7 +113,7 @@ class Baidu:
         :return:
         """
         url = "https://pan.baidu.com/api/quota?access_token=%s&chckfree=1&checkexpire=1" % self.access_token
-        res = requests.get(url)
+        res = self.s.get(url)
         res = res.json()
         if 'error' in res:
             logTool.error('返回出错，错误代码：%s。错误信息：%s.具体请参阅%s' % (
@@ -149,7 +153,7 @@ class Baidu:
         data = "&".join("{}={}".format(*i) for i in data.items())
 
         logTool.info('文件%s预上传' % path)
-        res = requests.post(url=url, data=data, headers=header).json()
+        res = self.s.post(url=url, data=data, headers=header).json()
         if int(res['errno']) != 0:
             logTool.error('%s 上传错误，错误代码%s' % (name, res['errno']))
             raise requests.HTTPError('%s 上传错误，错误代码%s' % (name, res['errno']))
@@ -166,13 +170,11 @@ class Baidu:
                 }
                 block_list = []
                 for i, val in enumerate(file_list):
-                    logTool.info('准备上传%s第%d个分块文件%s' % (path, i, val['path']))
                     data['partseq'] = i
                     url = 'https://d.pcs.baidu.com/rest/2.0/pcs/superfile2?access_token=%s&%s' % (
                         self.access_token, "&".join("{}={}".format(*i) for i in data.items()))
                     files = {'file': open(val['path'], 'rb')}
-                    logTool.info('开始上传%s第%d个分块文件%s' % (path, i, val['path']))
-                    upload_res = requests.post(url, files=files, timeout=None).json()
+                    upload_res = self.s.post(url, files=files, timeout=None).json()
                     if 'errno' in upload_res:
                         logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
                         raise requests.HTTPError(
@@ -192,12 +194,13 @@ class Baidu:
                     "block_list": json.dumps(block_list)
                 }
                 encode_data = "&".join("{}={}".format(*i) for i in data.items())
-                create_res = requests.post(url, data=encode_data, headers=header).json()
+                create_res = self.s.post(url, data=encode_data, headers=header).json()
                 if 'errno' not in create_res or int(create_res['errno']) == 0:
                     logTool.info('%s文件上传成功' % (path))
                 else:
                     logTool.error('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
                     raise requests.HTTPError('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
+
 
     def _file_chunkspilt(self, filepath, chunksize=4194304):
         '''

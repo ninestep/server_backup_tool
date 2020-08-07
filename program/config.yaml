@@ -15,7 +15,7 @@ save:
     client_id: deSrTwIBCc4ysSqTMrkCQSpv
     secret_key: DHhcOkElVNb2qUXDM7Vvx3emWx65GbeB
     save_path: '/server/backup/'
-    authorization_code: '' #授权码粘贴到这里
+    authorization_code: '7d7134082902740cf80d66f1a912ebda' #授权码粘贴到这里
 
 # 备份配置
 back_up:
