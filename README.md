@@ -19,13 +19,14 @@
 > 2. 直接访问`https://openapi.baidu.com/oauth/2.0/authorize?response_type=code&client_id=deSrTwIBCc4ysSqTMrkCQSpv&redirect_uri=oob&scope=basic,netdisk&display=tv&qrcode=1&force_login=1`, 并将授权码粘贴到`program\config.yaml`中，直接运行`docker-compose up -d python` 即可
 > 因为授权码只在十分钟内有效，且每个授权码仅可使用1次，所以注意更新。
 
-````
-后期计划
+
+
+# 后期计划
 - [x] 增加百度网盘备份支持
 - [ ] 增加onedrive备份支持
 - [ ] 增加sqlserver备份支持
 
-配置文件格式
+# 配置文件格式
 ~~~
 # 默认配置
 default:
