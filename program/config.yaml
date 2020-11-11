@@ -21,14 +21,24 @@ save:
 back_up:
 #  test: #备份名称，不可重复
 #    type: file #备份类型，file文件，其他为数据库类型
-#    path: /program/admin #备份路径
-#    backup_type: increment # 备份类型，quantity全量备份，increment增量备份，数据库统一进行全量备份
-#    save_name: mail #对应save里面配置的选项
-#    cron: "*/59 * * * *" #cron格式时间戳
+#    path: /program/upload #备份路径
+#    backup_type: quantity # 备份类型，quantity全量备份，increment增量备份，数据库统一进行全量备份
+#    save_name: baidu #对应save里面配置的选项
+#    cron: "*/1 * * * *" #cron格式时间戳
+#  mysql:
+#    type: mysql
+#    address: mysql #数据库地址
+#    database: default #指定数据库，如果备份全部数据库直接填写"",如果备份多个数据库，填写"test1,test2"
+#    port: 3306 #数据库端口
+#    username: root #用户名
+#    password: root #密码
+#    save_name: baidu
+#    cron: "*/1 * * * *"
+# 本地数据库实例
   mysql:
     type: mysql
-    address: mysql #数据库地址
-    database: default #指定数据库
+    address: host_machine #数据库地址
+    database: "" #指定数据库，如果备份全部数据库直接填写"",如果备份多个数据库，填写"test1,test2"
     port: 3306 #数据库端口
     username: root #用户名
     password: root #密码

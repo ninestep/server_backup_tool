@@ -25,14 +25,48 @@ class mysql:
 
     def backUp(self):
         dbs = self._GetDatabaseNames()
-        if self.database not in dbs:
-            logTool.error('未找到数据库%s' % self.database)
-            raise KeyError('未找到数据库%s' % self.database)
-        try:
-            cmd = "mysqldump -h%s -P %s -u%s -p%s %s | gzip > %s" % (
-                self.address, self.port, self.username, self.password, self.database, self.save_path
-            )
-            os.system(cmd)
-        except Exception as e:
-            logTool.error(e)
-            raise e
+        if self.database=='':
+            try:
+                # mysqldump -uroot -p123456 -A > /data/mysqlDump/mydb.sql
+                cmd = "mysqldump -h%s -P %s -u%s -p%s --all-databases | gzip > %s" % (
+                    self.address, self.port, self.username, self.password,  self.save_path
+                )
+                print(cmd)
+                os.system(cmd)
+            except Exception as e:
+                logTool.error(e)
+                raise e
+        elif ',' in self.database:
+            databases = self.database.split(',')
+            for i, val in enumerate(databases):
+                if val not in dbs:
+                    del databases[i]
+            if len(databases)<=0:
+                logTool.error('未找到数据库%s' % self.database)
+                raise KeyError('未找到数据库%s' % self.database)
+            databases = ' '.join(databases)
+            try:
+                # mysqldump -uroot -p123456 --databases db1 db2 > /data/mysqlDump/mydb.sql
+                cmd = "mysqldump -h%s -P %s -u%s -p%s --databases %s | gzip > %s" % (
+                    self.address, self.port, self.username, self.password,databases , self.save_path
+                )
+
+                print(cmd)
+                os.system(cmd)
+            except Exception as e:
+                logTool.error(e)
+                raise e
+        else:
+            if self.database not in dbs:
+                logTool.error('未找到数据库%s' % self.database)
+                raise KeyError('未找到数据库%s' % self.database)
+            try:
+                cmd = "mysqldump -h%s -P %s -u%s -p%s %s | gzip > %s" % (
+                    self.address, self.port, self.username, self.password, self.database, self.save_path
+                )
+
+                print(cmd)
+                os.system(cmd)
+            except Exception as e:
+                logTool.error(e)
+                raise e

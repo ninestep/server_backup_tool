@@ -2,6 +2,8 @@ version: "3"
 services:
   python:
     build: ./
+    extra_hosts:
+      - "host_machine:192.168.1.103" # 此处请填写宿主机的ip,方便容器访问宿主机
     volumes:
       - ./program:/program
 #    command: python main.py
