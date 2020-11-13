@@ -128,90 +128,95 @@ class Baidu:
         file_size = os.path.getsize(path)
         if file_size >= 4294967296:
             logTool.info('%s,大小大于4G，开始拆分' % name)
-            file_list = self._file_chunkspilt(path, 4294967296)
+            try:
+                file_list = self._file_chunkspilt(path, 4294967200)
+            except Exception as e:
+                print(e)
+                raise e
             logTool.info('文件%s切分为%s份' % (path, len(file_list)))
             for i, val in enumerate(file_list):
-                self.save(val['path'], path.join(name, os.path.basename(path)))
+                self.save(val['path'], os.path.join(name, os.path.basename(path)))
             return True
-        bd_path = os.path.join(self.save_path, name, filename)
-        logTool.info('开始备份%s,文件将存贮到%s' % (name, bd_path))
-        if file_size <= 4194304:
-            file_list = [{
-                'path': path,
-                'md5': self._get_md5(path)
-            }]
         else:
-            logTool.info('文件%s大小%sM大于4M，切分文件' % (path, file_size / 1048576))
-            file_list = self._file_chunkspilt(path)
-            logTool.info('文件%s切分为%s份' % (path, len(file_list)))
-        data = {
-            "path": bd_path,
-            "size": file_size,
-            "isdir": 0,
-            "autoinit": 1,
-            "rtype": 1,
-            "block_list": json.dumps(["%s" % x["md5"] for x in file_list]),
-            "content-md5": self._get_md5(path)
-        }
-        header = {
-            'User-Agent': 'pan.baidu.com'
-        }
-        url = 'https://pan.baidu.com/rest/2.0/xpan/file?method=precreate&access_token=%s' % self.access_token
-        data = "&".join("{}={}".format(*i) for i in data.items())
-
-        logTool.info('文件%s预上传' % path)
-        res = self.s.post(url=url, data=data, headers=header).json()
-        if int(res['errno']) != 0:
-            logTool.error('%s 上传错误，错误代码%s' % (name, res['errno']))
-            raise requests.HTTPError('%s 上传错误，错误代码%s' % (name, res['errno']))
-        else:
-            if int(res['return_type']) == 2:
-                logTool.info('%s 已上传，存储路径为%s' % (name, res['info']['path']))
+            bd_path = os.path.join(self.save_path, name, filename)
+            logTool.info('开始备份%s,文件将存贮到%s' % (name, bd_path))
+            if file_size <= 4194304:
+                file_list = [{
+                    'path': path,
+                    'md5': self._get_md5(path)
+                }]
             else:
-                logTool.info('文件%s分块上传' % path)
-                upload_id = res['uploadid']
-                data = {
-                    "method": "upload",
-                    "type": "tmpfile",
-                    "path": bd_path,
-                    "uploadid": res['uploadid']
-                }
-                block_list = []
-                for i, val in enumerate(file_list):
-                    data['partseq'] = i
-                    url = 'https://d.pcs.baidu.com/rest/2.0/pcs/superfile2?access_token=%s&%s' % (
-                        self.access_token, "&".join("{}={}".format(*i) for i in data.items()))
-                    files = {'file': open(val['path'], 'rb')}
-                    try:
-                        upload_res = self.s.post(url, files=files, timeout=None).json()
-                    except requests.exceptions as e:
-                        logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % e)
-                        raise e
-                    if 'errno' in upload_res:
-                        logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
-                        raise requests.HTTPError(
-                            '%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
-                    else:
-                        block_list.append(upload_res['md5'])
-                        if path != val['path']:
-                            os.remove(val['path'])
-                logTool.info('文件上传完成，开始创建文件')
-                url = 'https://pan.baidu.com/rest/2.0/xpan/file?method=create&access_token=%s' % self.access_token
-                data = {
-                    "path": bd_path,
-                    "size": file_size,
-                    "isdir": 0,
-                    "uploadid": upload_id,
-                    "rtype": 3,
-                    "block_list": json.dumps(block_list)
-                }
-                encode_data = "&".join("{}={}".format(*i) for i in data.items())
-                create_res = self.s.post(url, data=encode_data, headers=header).json()
-                if 'errno' not in create_res or int(create_res['errno']) == 0:
-                    logTool.info('%s文件上传成功' % (path))
+                logTool.info('文件%s大小%sM大于4M，切分文件' % (path, file_size / 1048576))
+                file_list = self._file_chunkspilt(path)
+                logTool.info('文件%s切分为%s份' % (path, len(file_list)))
+            data = {
+                "path": bd_path,
+                "size": file_size,
+                "isdir": 0,
+                "autoinit": 1,
+                "rtype": 1,
+                "block_list": json.dumps(["%s" % x["md5"] for x in file_list]),
+                "content-md5": self._get_md5(path)
+            }
+            header = {
+                'User-Agent': 'pan.baidu.com'
+            }
+            url = 'https://pan.baidu.com/rest/2.0/xpan/file?method=precreate&access_token=%s' % self.access_token
+            data = "&".join("{}={}".format(*i) for i in data.items())
+
+            logTool.info('文件%s预上传' % path)
+            res = self.s.post(url=url, data=data, headers=header).json()
+            if int(res['errno']) != 0:
+                logTool.error('%s 上传错误，错误代码%s' % (name, res['errno']))
+                raise requests.HTTPError('%s 上传错误，错误代码%s' % (name, res['errno']))
+            else:
+                if int(res['return_type']) == 2:
+                    logTool.info('%s 已上传，存储路径为%s' % (name, res['info']['path']))
                 else:
-                    logTool.error('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
-                    raise requests.HTTPError('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
+                    logTool.info('文件%s分块上传' % path)
+                    upload_id = res['uploadid']
+                    data = {
+                        "method": "upload",
+                        "type": "tmpfile",
+                        "path": bd_path,
+                        "uploadid": res['uploadid']
+                    }
+                    block_list = []
+                    for i, val in enumerate(file_list):
+                        data['partseq'] = i
+                        url = 'https://d.pcs.baidu.com/rest/2.0/pcs/superfile2?access_token=%s&%s' % (
+                            self.access_token, "&".join("{}={}".format(*i) for i in data.items()))
+                        files = {'file': open(val['path'], 'rb')}
+                        try:
+                            upload_res = self.s.post(url, files=files, timeout=None).json()
+                        except requests.exceptions as e:
+                            logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % e)
+                            raise e
+                        if 'errno' in upload_res:
+                            logTool.error('%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
+                            raise requests.HTTPError(
+                                '%s第%d个分块文件%s上传失败，错误代码%s' % (path, i, val['path'], upload_res['errno']))
+                        else:
+                            block_list.append(upload_res['md5'])
+                            if path != val['path']:
+                                os.remove(val['path'])
+                    logTool.info('文件上传完成，开始创建文件')
+                    url = 'https://pan.baidu.com/rest/2.0/xpan/file?method=create&access_token=%s' % self.access_token
+                    data = {
+                        "path": bd_path,
+                        "size": file_size,
+                        "isdir": 0,
+                        "uploadid": upload_id,
+                        "rtype": 3,
+                        "block_list": json.dumps(block_list)
+                    }
+                    encode_data = "&".join("{}={}".format(*i) for i in data.items())
+                    create_res = self.s.post(url, data=encode_data, headers=header).json()
+                    if 'errno' not in create_res or int(create_res['errno']) == 0:
+                        logTool.info('%s文件上传成功' % (path))
+                    else:
+                        logTool.error('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
+                        raise requests.HTTPError('%s文件上传上传失败，错误代码%s' % (path, create_res['errno']))
 
     def _file_chunkspilt(self, filepath, chunksize=4194304):
         '''
@@ -224,19 +229,25 @@ class Baidu:
             inputfile = open(filepath, 'rb')
             [path, filename] = os.path.split(filepath)
             while True:
-                chunk = inputfile.read(chunksize)
-                if not chunk:
-                    break
-                partnum += 1
+                chunk = inputfile.read(2048)
                 newfilename = os.path.join(path, (filename + '_%04d' % partnum))
-                sub_file = open(newfilename, 'wb')
-                sub_file.write(chunk)
-                sub_file.close()
-                md5 = self._get_md5(newfilename)
-                file_list.append({
-                    'path': newfilename,
-                    'md5': md5,
-                })
+                if not chunk:
+                    md5 = self._get_md5(newfilename)
+                    file_list.append({
+                        'path': newfilename,
+                        'md5': md5,
+                    })
+                    break
+                with open(newfilename, 'ab+') as sub_file:
+                    sub_file.write(chunk)
+                if (os.path.getsize(newfilename) + 2048 > chunksize):
+                    partnum += 1
+                    md5 = self._get_md5(newfilename)
+                    file_list.append({
+                        'path': newfilename,
+                        'md5': md5,
+                    })
+
             inputfile.close()
             return file_list
         else:
