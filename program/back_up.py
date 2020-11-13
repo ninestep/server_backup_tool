@@ -52,7 +52,7 @@ class FullBack:
         :return:
         """
         dt = datetime.now()
-        save_name = '%s/%s.tar' % (name, dt.strftime('%Y%m%d%H%M%S%f'))
+        save_name = '%s/%s.tar.gz' % (name, dt.strftime('%Y%m%d%H%M%S%f'))
         save_path = os.path.join(self.save_path, save_name)
         self.tarfileTool.compress(path, save_path)
         return save_path

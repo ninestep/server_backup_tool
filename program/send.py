@@ -125,10 +125,16 @@ class Baidu:
 
     def save(self, path, name):
         [file_path, filename] = os.path.split(path)
-        bd_path = os.path.join(self.save_path, name, filename)
-
-        logTool.info('开始备份%s,文件将存贮到%s' % (name, bd_path))
         file_size = os.path.getsize(path)
+        if file_size >= 4294967296:
+            logTool.info('%s,大小大于4G，开始拆分' % name)
+            file_list = self._file_chunkspilt(path, 4294967296)
+            logTool.info('文件%s切分为%s份' % (path, len(file_list)))
+            for i, val in enumerate(file_list):
+                self.save(val['path'], path.join(name, os.path.basename(path)))
+            return True
+        bd_path = os.path.join(self.save_path, name, filename)
+        logTool.info('开始备份%s,文件将存贮到%s' % (name, bd_path))
         if file_size <= 4194304:
             file_list = [{
                 'path': path,
