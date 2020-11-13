@@ -70,7 +70,8 @@ def fullBack(name, args, save_path):
     except Exception as e:
         logTool.error('%s文件上传出错，错误信息：%s' % (name, e))
     finally:
-        os.remove(save_path)
+        if os.path.isfile(save_path):
+            os.remove(save_path)
 
     jobs = sched.get_job(name)
     if jobs is not None:

@@ -133,6 +133,8 @@ class Baidu:
             except Exception as e:
                 print(e)
                 raise e
+            finally:
+                os.remove(path)
             logTool.info('文件%s切分为%s份' % (path, len(file_list)))
             for i, val in enumerate(file_list):
                 self.save(val['path'], os.path.join(name, os.path.basename(path)))
@@ -158,6 +160,7 @@ class Baidu:
                 "block_list": json.dumps(["%s" % x["md5"] for x in file_list]),
                 "content-md5": self._get_md5(path)
             }
+            os.remove(path)
             header = {
                 'User-Agent': 'pan.baidu.com'
             }
